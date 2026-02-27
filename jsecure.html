@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Secure Fernet Encryptor</title>
+
+<script src="https://cdn.jsdelivr.net/npm/fernet@0.3.2/fernetBrowser.min.js"></script>
+
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: #f4f6f9;
+    margin: 0;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 750px;
+    margin: auto;
+    background: white;
+    padding: 35px;
+    border-radius: 18px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.section {
+    margin-bottom: 28px;
+}
+
+label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 8px;
+}
+
+textarea, input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+    box-sizing: border-box;
+    transition: 0.2s;
+}
+
+textarea:focus, input:focus {
+    outline: none;
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74,144,226,0.15);
+}
+
+button {
+    margin-top: 10px;
+    padding: 10px 16px;
+    border-radius: 10px;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.primary {
+    background: #4a90e2;
+    color: white;
+}
+
+.primary:hover {
+    background: #3a7bd5;
+}
+
+.secondary {
+    background: #eef1f5;
+}
+
+.secondary:hover {
+    background: #dde3ea;
+}
+
+.button-row {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>🔐 Secure Fernet Encryptor</h2>
+
+    <div class="section">
+        <label>Fernet Secret Key</label>
+        <input type="text" id="keyBox">
+        <button class="secondary" onclick="copyText('keyBox')">Copy Key</button>
+    </div>
+
+    <div class="section">
+        <label>Input (Plaintext or Encrypted Token)</label>
+        <textarea id="inputBox" rows="5"></textarea>
+        <button class="secondary" onclick="copyText('inputBox')">Copy Input</button>
+    </div>
+
+    <div class="button-row">
+        <button class="primary" onclick="encrypt()">Encrypt</button>
+        <button class="primary" onclick="decrypt()">Decrypt</button>
+    </div>
+
+    <div class="section" style="margin-top:30px;">
+        <label>Output</label>
+        <textarea id="outputBox" rows="5"></textarea>
+        <button class="secondary" onclick="copyText('outputBox')">Copy Output</button>
+    </div>
+</div>
+
+<script>
+function copyText(id) {
+    const element = document.getElementById(id);
+    element.select();
+    document.execCommand("copy");
+    alert("Copied to clipboard!");
+}
+
+function encrypt() {
+    const key = document.getElementById("keyBox").value.trim();
+    const text = document.getElementById("inputBox").value;
+
+    if (!key || !text) {
+        alert("Key and text are required.");
+        return;
+    }
+
+    try {
+        const secret = new fernet.Secret(key);
+        const token = new fernet.Token({
+            secret: secret,
+            time: Date.now()
+        });
+
+        const encrypted = token.encode(text);
+        document.getElementById("outputBox").value = encrypted;
+
+    } catch (e) {
+        alert("Encryption error: " + e.message);
+    }
+}
+
+function decrypt() {
+    const key = document.getElementById("keyBox").value.trim();
+    const tokenString = document.getElementById("inputBox").value.trim();
+
+    if (!key || !tokenString) {
+        alert("Key and encrypted token are required.");
+        return;
+    }
+
+    try {
+        const secret = new fernet.Secret(key);
+        const token = new fernet.Token({
+            secret: secret,
+            token: tokenString,
+            ttl: 0
+        });
+
+        const decrypted = token.decode();
+        document.getElementById("outputBox").value = decrypted;
+
+    } catch (e) {
+        alert("Invalid key or corrupted token.");
+    }
+}
+</script>
+
+</body>
+</html>
