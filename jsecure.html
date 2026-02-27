@@ -98,6 +98,7 @@ button {
         <label>Fernet Secret Key</label>
         <input type="text" id="keyBox">
         <button class="secondary" onclick="copyText('keyBox')">Copy Key</button>
+        <button class="secondary" onclick="generateKey()">Generate Key</button>
     </div>
 
     <div class="section">
@@ -173,6 +174,20 @@ function decrypt() {
     } catch (e) {
         alert("Invalid key or corrupted token.");
     }
+}
+
+function generateKey() {
+    const array = new Uint8Array(32);
+    window.crypto.getRandomValues(array);
+
+    let binary = '';
+    array.forEach(b => binary += String.fromCharCode(b));
+
+    let base64 = btoa(binary)
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+
+    document.getElementById("keyBox").value = base64;
 }
 </script>
 
